@@ -1,7 +1,9 @@
 using health_app_backend;
+using health_app_backend.Mappings;
 using health_app_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using health_app_backend.Repositories;
+using health_app_backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,12 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRepository<HealthData>, HealthDataRepository>();
 builder.Services.AddScoped<IRepository<DemographicBenchmark>, DemographicBenchmarkRepository>();
-builder.Services.AddScoped<IRepository<Location>, LocationRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

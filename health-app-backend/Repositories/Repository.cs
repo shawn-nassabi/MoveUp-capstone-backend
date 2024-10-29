@@ -6,7 +6,7 @@ namespace health_app_backend.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    protected readonly AppDbContext _context;
+    protected AppDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
     public Repository(AppDbContext context)
