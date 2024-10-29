@@ -1,7 +1,16 @@
 using health_app_backend;
+using health_app_backend.Models;
 using Microsoft.EntityFrameworkCore;
+using health_app_backend.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Repositories
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRepository<HealthData>, HealthDataRepository>();
+builder.Services.AddScoped<IRepository<DemographicBenchmark>, DemographicBenchmarkRepository>();
+builder.Services.AddScoped<IRepository<Location>, LocationRepository>();
+builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
 
 // Add services to the container.
 
