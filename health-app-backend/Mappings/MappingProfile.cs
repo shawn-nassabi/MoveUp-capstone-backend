@@ -15,5 +15,13 @@ public class MappingProfile : Profile
         // Map UserCreateDto to User (for creating new users)
         CreateMap<UserCreateDto, User>()
             .ForMember(dest => dest.Location, opt => opt.Ignore());
+        
+        // Map HealthData to HealthDataResponseDto
+        CreateMap<HealthData, HealthDataResponseDto>()
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username))
+            .ForMember(dest => dest.DataTypeName, opt => opt.MapFrom(src => src.Datatype.Name));
+
+        // Map HealthDataCreateDto to HealthData (for creating new records)
+        CreateMap<HealthDataCreateDto, HealthData>();
     }
 }

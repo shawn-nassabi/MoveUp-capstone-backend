@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRepository<HealthData>, HealthDataRepository>();
+builder.Services.AddScoped<IHealthDataRepository, HealthDataRepository>();
 builder.Services.AddScoped<IRepository<DemographicBenchmark>, DemographicBenchmarkRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
@@ -19,6 +19,7 @@ builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IHealthDataService, HealthDataService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
