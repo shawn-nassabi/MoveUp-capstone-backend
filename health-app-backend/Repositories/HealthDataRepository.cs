@@ -61,5 +61,12 @@ namespace health_app_backend.Repositories
                 .Include(hd => hd.Datatype)  // Eager load DataType
                 .ToListAsync();
         }
+        
+        public IQueryable<HealthData> GetAll()
+        {
+            return _context.HealthData
+                .Include(hd => hd.User) // Eager load User
+                .Include(hd => hd.Datatype); // Eager load DataType
+        }
     }
 }

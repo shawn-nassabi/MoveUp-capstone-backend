@@ -13,5 +13,6 @@ public class AppDbContext : DbContext
     public DbSet<DemographicBenchmark> DemographicBenchmarks { get; set; }
     public DbSet<DataType> DataTypes { get; set; }
     public DbSet<Location> Locations { get; set; }
+    public DbSet<UserBenchmarkRecord> UserBenchmarkRecords { get; set; }
 }
 

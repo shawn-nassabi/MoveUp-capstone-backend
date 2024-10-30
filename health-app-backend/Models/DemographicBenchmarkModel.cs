@@ -16,7 +16,7 @@ public class DemographicBenchmark
     public int DataTypeId { get; set; }
     public DataType DataType { get; set; }
     
-    public string Timefram { get; set; }
+    public string Timeframe { get; set; }
     public float AverageValue { get; set; }
     public float RecommendedValue { get; set; }
     public DateTime CreatedAt { get; set; }
