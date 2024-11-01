@@ -42,6 +42,22 @@ namespace health_app_backend.Repositories
                 .Include(hd => hd.Datatype)   // Eager load DataType
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<HealthData>> GetAllByUserIdAsync(Guid userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return Enumerable.Empty<HealthData>(); // Return an empty list if user not found
+            }
+            // Get all HealthData entries for the user and include User and DataType entities
+            return  _context.HealthData
+                .Where(hd => hd.UserId == userId)
+                .Include(hd => hd.Datatype)
+                .Include(hd => hd.User)
+                .AsEnumerable();
+
+        }
         
         // Get HealthData for a specific user within a date range
         public async Task<IEnumerable<HealthData>> GetAllByUserIdAndDateRangeAsync(Guid userId, DateTime fromDate, DateTime toDate)

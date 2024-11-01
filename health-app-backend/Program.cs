@@ -13,7 +13,7 @@ builder.Services.AddScoped<IHealthDataRepository, HealthDataRepository>();
 builder.Services.AddScoped<IDemographicBenchmarkRepository, DemographicBenchmarkRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
-builder.Services.AddScoped<IRepository<UserBenchmarkRecord>, UserBenchmarkRecordRepository>();
+builder.Services.AddScoped<IUserBenchmarkRecordRepository, UserBenchmarkRecordRepository>();
 
 // Add services to the container.
 
@@ -22,6 +22,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHealthDataService, HealthDataService>();
 builder.Services.AddScoped<IDemographicBenchmarkService, DemographicBenchmarkService>();
+builder.Services.AddScoped<IUserBenchmarkRecordService, UserBenchmarkRecordService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

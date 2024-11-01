@@ -14,15 +14,17 @@ namespace health_app_backend.Services
         private readonly IDemographicBenchmarkRepository _benchmarkRepository;
         private readonly IHealthDataRepository _healthDataRepository;
         private readonly IMapper _mapper;
-        private readonly IRepository<UserBenchmarkRecord> _userBenchmarkRecord;
+        private readonly IUserBenchmarkRecordRepository _userBenchmarkRecordRepository;
         private readonly ILocationRepository _locationRepository;
+        private readonly IUserRepository _userRepository;
 
-        public DemographicBenchmarkService(IDemographicBenchmarkRepository benchmarkRepository, IHealthDataRepository healthDataRepository, IRepository<UserBenchmarkRecord> userBenchmarkRecord, ILocationRepository locationRepository, IMapper mapper)
+        public DemographicBenchmarkService(IDemographicBenchmarkRepository benchmarkRepository, IHealthDataRepository healthDataRepository, IUserBenchmarkRecordRepository userBenchmarkRecord, ILocationRepository locationRepository, IUserRepository userRepository, IMapper mapper)
         {
             _benchmarkRepository = benchmarkRepository;
             _healthDataRepository = healthDataRepository;
-            _userBenchmarkRecord = userBenchmarkRecord;
+            _userBenchmarkRecordRepository = userBenchmarkRecord;
             _locationRepository = locationRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
         
@@ -48,17 +50,18 @@ namespace health_app_backend.Services
             {
                 Console.WriteLine("Benchmark already exists! and the location is" + existingBenchmark.Location.CityName);
                 // If the benchmark exists but no UserBenchmarkRecord exists, create one
-                var newUserBenchmarkRecordA = new UserBenchmarkRecord
+                var newUserBenchmarkRecordA = new UserBenchmarkRecordModel
                 {
                     Id = Guid.NewGuid(),
                     DataValue = userBenchmarkCreateDto.DataValue,
                     DemographicBenchmark = existingBenchmark,
                     DemographicBenchmarkId = existingBenchmark.Id,
-                    UserId = userBenchmarkCreateDto.UserId
+                    UserId = userBenchmarkCreateDto.UserId,
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                await _userBenchmarkRecord.AddAsync(newUserBenchmarkRecordA);
-                await _userBenchmarkRecord.SaveChangesAsync();
+                await _userBenchmarkRecordRepository.AddAsync(newUserBenchmarkRecordA);
+                await _userBenchmarkRecordRepository.SaveChangesAsync();
 
                 return _mapper.Map<UserBenchmarkResponseDto>(newUserBenchmarkRecordA);
             }
@@ -101,17 +104,18 @@ namespace health_app_backend.Services
             await _benchmarkRepository.AddAsync(newBenchmark);
             await _benchmarkRepository.SaveChangesAsync();
 
-            var newUserBenchmarkRecord = new UserBenchmarkRecord
+            var newUserBenchmarkRecord = new UserBenchmarkRecordModel
             {
                 Id = Guid.NewGuid(),
                 DataValue = userBenchmarkCreateDto.DataValue,
                 DemographicBenchmark = newBenchmark,
                 DemographicBenchmarkId = newBenchmark.Id,
-                UserId = userBenchmarkCreateDto.UserId
+                UserId = userBenchmarkCreateDto.UserId,
+                CreatedAt = DateTime.UtcNow
             };
             
-            await _userBenchmarkRecord.AddAsync(newUserBenchmarkRecord);
-            await _userBenchmarkRecord.SaveChangesAsync();
+            await _userBenchmarkRecordRepository.AddAsync(newUserBenchmarkRecord);
+            await _userBenchmarkRecordRepository.SaveChangesAsync();
             
             string cityName = _locationRepository.GetByIdAsync(newBenchmark.LocationId).Result.CityName;
             
@@ -120,6 +124,7 @@ namespace health_app_backend.Services
 
             return responseDto;
         }
+        
 
     }
 }

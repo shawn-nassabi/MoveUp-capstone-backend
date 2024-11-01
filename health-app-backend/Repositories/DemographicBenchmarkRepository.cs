@@ -20,5 +20,15 @@ namespace health_app_backend.Repositories
                 .Include(b => b.Location)    // Eager load Location
                 .Include(b => b.DataType);   // Eager load DataType
         }
+
+        public IQueryable<DemographicBenchmark> GetAllByUserId(Guid userId)
+        {
+            return _context.UserBenchmarkRecords
+                .Where(ubr => ubr.UserId == userId)
+                .Select(ubr => ubr.DemographicBenchmark)
+                .Include(db => db.Location)                   
+                .Include(db => db.DataType)                   
+                .AsQueryable();
+        }
     }
 }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace health_app_backend.Models;
 
-public class UserBenchmarkRecord
+public class UserBenchmarkRecordModel
 {
     [Key]
     public Guid Id { get; set; }
@@ -10,4 +10,5 @@ public class UserBenchmarkRecord
     public Guid DemographicBenchmarkId { get; set; }
     public DemographicBenchmark DemographicBenchmark { get; set; }
     public float DataValue { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

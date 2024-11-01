@@ -9,6 +9,7 @@ namespace health_app_backend.Repositories
     {
         
         Task<IEnumerable<HealthData>> GetAllByUsernameAsync(string username);
+        Task<IEnumerable<HealthData>> GetAllByUserIdAsync(Guid userId);
         Task<IEnumerable<HealthData>> GetAllByUserIdAndDateRangeAsync(Guid userId, DateTime fromDate, DateTime toDate);
         IQueryable<HealthData> GetAll();
     }

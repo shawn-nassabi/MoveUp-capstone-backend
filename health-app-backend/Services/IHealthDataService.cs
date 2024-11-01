@@ -4,8 +4,9 @@ namespace health_app_backend.Services;
 
 public interface IHealthDataService
 {
-    public Task<HealthDataResponseDto> GetHealthDataAsync(string healthDataId);
-    public Task<List<HealthDataResponseDto>> GetHealthDataByUsernameAsync(string username);
-    public Task<List<HealthDataResponseDto>> GetHealthDataByUsernameAndFromDateAsync(string username, string fromDate, string toDate);
-    public Task<string> AddHealthDataAsync(HealthDataCreateDto healthDataCreateDto);
+    Task<HealthDataResponseDto> GetHealthDataAsync(Guid healthDataId);
+    Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUserIdAsync(Guid userId);
+    Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUsernameAndFromDateAsync(string username, string fromDate, string toDate);
+    Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUserIdAndTypeAsync(Guid userId, int datatypeId);
+    Task<string> AddHealthDataAsync(HealthDataCreateDto healthDataCreateDto);
 }

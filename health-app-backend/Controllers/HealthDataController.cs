@@ -20,7 +20,7 @@ namespace health_app_backend.Controllers
 
         // Get health data by health data ID
         [HttpGet("{healthDataId}")]
-        public async Task<ActionResult<HealthDataResponseDto>> GetHealthDataById(string healthDataId)
+        public async Task<ActionResult<HealthDataResponseDto>> GetHealthDataById(Guid healthDataId)
         {
             var healthData = await _healthDataService.GetHealthDataAsync(healthDataId);
             if (healthData == null)
@@ -31,17 +31,34 @@ namespace health_app_backend.Controllers
         }
 
         // Get all health data for the person with the given username
-        [HttpGet("user/{username}")]
-        public async Task<ActionResult<List<HealthDataResponseDto>>> GetHealthDataByUsername(string username)
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<List<HealthDataResponseDto>>> GetHealthDataByUsername(Guid userId)
         {
             try
             {
-                var healthDataList = await _healthDataService.GetHealthDataByUsernameAsync(username);
+                var healthDataList = await _healthDataService.GetHealthDataByUserIdAsync(userId);
                 return Ok(healthDataList);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("user/{userId}/{datatypeId}")]
+        public async Task<ActionResult<List<HealthDataResponseDto>>> GetHealthDataByUserIdAndDatatypeId(Guid userId,
+            int datatypeId)
+        {
+            try
+            {
+                var healthDataList = await _healthDataService.GetHealthDataByUserIdAndTypeAsync(userId, datatypeId);
+                return Ok(healthDataList);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest(ex.Message);
+                throw;
             }
         }
 

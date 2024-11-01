@@ -10,4 +10,5 @@ public class UserBenchmarkResponseDto
     public float AverageValue { get; set; }
     public float RecommendedValue { get; set; }
     public string LocationName { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

@@ -22,26 +22,26 @@ namespace health_app_backend.Services
         }
 
         // Get HealthData by Id
-        public async Task<HealthDataResponseDto> GetHealthDataAsync(string healthDataId)
+        public async Task<HealthDataResponseDto> GetHealthDataAsync(Guid healthDataId)
         {
-            if (!Guid.TryParse(healthDataId, out var guidId))
-            {
-                throw new ArgumentException("Invalid HealthData ID format.");
-            }
+            // if (!Guid.TryParse(healthDataId, out var guidId))
+            // {
+            //     throw new ArgumentException("Invalid HealthData ID format.");
+            // }
 
-            var healthData = await _healthDataRepository.GetByIdAsync(guidId);
+            var healthData = await _healthDataRepository.GetByIdAsync(healthDataId);
             return healthData != null ? _mapper.Map<HealthDataResponseDto>(healthData) : null;
         }
 
         // Get all HealthData by Username
-        public async Task<List<HealthDataResponseDto>> GetHealthDataByUsernameAsync(string username)
+        public async Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUserIdAsync(Guid userId)
         {
-            var healthDataList = await _healthDataRepository.GetAllByUsernameAsync(username);
-            return _mapper.Map<List<HealthDataResponseDto>>(healthDataList);
+            var healthDataList = await _healthDataRepository.GetAllByUserIdAsync(userId);
+            return _mapper.Map<IEnumerable<HealthDataResponseDto>>(healthDataList);
         }
 
         // Get HealthData by Username within a date range
-        public async Task<List<HealthDataResponseDto>> GetHealthDataByUsernameAndFromDateAsync(string username, string fromDate, string toDate)
+        public async Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUsernameAndFromDateAsync(string username, string fromDate, string toDate)
         {
             var user = await _userRepository.GetByUsernameAsync(username);
             if (user == null)
@@ -66,7 +66,26 @@ namespace health_app_backend.Services
             }
 
             var healthDataList = await _healthDataRepository.GetAllByUserIdAndDateRangeAsync(user.Id, startDate, endDate);
-            return _mapper.Map<List<HealthDataResponseDto>>(healthDataList);
+            return _mapper.Map<IEnumerable<HealthDataResponseDto>>(healthDataList);
+        }
+        
+        // Get data of a specific type for a specific user Id 
+        public async Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUserIdAndTypeAsync(Guid userId,
+            int datatypeId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var healthDataList = await _healthDataRepository.GetAllByUserIdAsync(userId);
+            
+            // Filter by datatypeId
+            var filteredHealthDataList = healthDataList.Where(hd => hd.DatatypeId == datatypeId);
+            
+            // Map to DTOs and return
+            return _mapper.Map<IEnumerable<HealthDataResponseDto>>(filteredHealthDataList);
         }
 
 

@@ -10,10 +10,33 @@ namespace health_app_backend.Controllers
     public class DemographicBenchmarkController : ControllerBase
     {
         private readonly IDemographicBenchmarkService _demographicBenchmarkService;
+        private readonly IUserBenchmarkRecordService _userBenchmarkService;
 
-        public DemographicBenchmarkController(IDemographicBenchmarkService demographicBenchmarkService)
+        public DemographicBenchmarkController(IDemographicBenchmarkService demographicBenchmarkService, IUserBenchmarkRecordService userBenchmarkRecordService)
         {
             _demographicBenchmarkService = demographicBenchmarkService;
+            _userBenchmarkService = userBenchmarkRecordService;
+        }
+        
+        // Get all benchmarks for a specific userId
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<List<UserBenchmarkResponseDto>>> GetDemographicBenchmark(Guid userId)
+        {
+            try
+            {
+                var benchmarks = await _userBenchmarkService.GetUserBenchmarkRecordsByUserIdAsync(userId);
+                if (benchmarks == null)
+                {
+                    return NotFound("User not found");
+                }
+                return Ok(benchmarks);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return StatusCode(500, ex.Message);
+                throw;
+            }
         }
         
         [HttpPost]
