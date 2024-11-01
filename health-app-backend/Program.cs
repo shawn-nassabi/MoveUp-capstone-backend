@@ -12,7 +12,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IHealthDataRepository, HealthDataRepository>();
 builder.Services.AddScoped<IDemographicBenchmarkRepository, DemographicBenchmarkRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
-builder.Services.AddScoped<IRepository<DataType>, DataTypeRepository>();
+builder.Services.AddScoped<IDataTypeRepository, DataTypeRepository>();
 builder.Services.AddScoped<IUserBenchmarkRecordRepository, UserBenchmarkRecordRepository>();
 
 // Add services to the container.

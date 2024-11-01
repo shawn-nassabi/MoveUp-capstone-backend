@@ -62,4 +62,16 @@ public class UserController : ControllerBase
             return StatusCode(500, "An error occurred while creating the user.");
         }
     }
+    
+    // Update an existing user
+    [HttpPut("id/{userId}")]
+    public async Task<ActionResult> UpdateUser(string userId, UserUpdateDto updatedUser)
+    {
+        var updateSuccess = await _userService.UpdateUserAsync(userId, updatedUser);
+        if (!updateSuccess)
+        {
+            return NotFound("User not found.");
+        }
+        return NoContent(); // 204 No Content if the update was successful
+    }
 }

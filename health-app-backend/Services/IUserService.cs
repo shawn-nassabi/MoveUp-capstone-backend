@@ -9,4 +9,5 @@ public interface IUserService
     public Task<UserResponseDto> GetUserAsync(string userId);
     public Task<UserResponseDto> GetUserByUsernameAsync(string username);
     public Task<string> AddUserAsync(UserCreateDto user);
+    Task<bool> UpdateUserAsync(string userId, UserUpdateDto updatedUser);
 }

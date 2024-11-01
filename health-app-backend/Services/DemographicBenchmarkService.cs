@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using health_app_backend.Helpers;
 using health_app_backend.DTOs;
 using health_app_backend.Models;
 using health_app_backend.Repositories;
@@ -17,14 +18,16 @@ namespace health_app_backend.Services
         private readonly IUserBenchmarkRecordRepository _userBenchmarkRecordRepository;
         private readonly ILocationRepository _locationRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IDataTypeRepository _dataTypeRepository;
 
-        public DemographicBenchmarkService(IDemographicBenchmarkRepository benchmarkRepository, IHealthDataRepository healthDataRepository, IUserBenchmarkRecordRepository userBenchmarkRecord, ILocationRepository locationRepository, IUserRepository userRepository, IMapper mapper)
+        public DemographicBenchmarkService(IDemographicBenchmarkRepository benchmarkRepository, IHealthDataRepository healthDataRepository, IUserBenchmarkRecordRepository userBenchmarkRecord, ILocationRepository locationRepository, IUserRepository userRepository, IDataTypeRepository dataTypeRepository, IMapper mapper)
         {
             _benchmarkRepository = benchmarkRepository;
             _healthDataRepository = healthDataRepository;
             _userBenchmarkRecordRepository = userBenchmarkRecord;
             _locationRepository = locationRepository;
             _userRepository = userRepository;
+            _dataTypeRepository = dataTypeRepository;
             _mapper = mapper;
         }
         
@@ -83,9 +86,11 @@ namespace health_app_backend.Services
             float averageValue = healthDataList.Count > 0 
                 ? healthDataList.Average(hd => hd.DataValue) 
                 : 0;
-
-            // Define a hardcoded recommended value
-            float recommendedValue = 1.2f * averageValue; // Placeholder
+            
+            var healthDataTypeName = _dataTypeRepository.GetByIdAsync(userBenchmarkCreateDto.DataTypeId).Result.Name;
+            
+            // Calculate recommended value
+            float recommendedValue = RecommendationHelper.CalculateRecommendedValue(userBenchmarkCreateDto.MinAge, userBenchmarkCreateDto.MaxAge, userBenchmarkCreateDto.Gender, healthDataTypeName, averageValue);
 
             // Create and save new benchmark
             var newBenchmark = new DemographicBenchmark
