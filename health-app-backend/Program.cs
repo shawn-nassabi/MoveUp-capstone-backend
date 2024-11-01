@@ -14,6 +14,8 @@ builder.Services.AddScoped<IDemographicBenchmarkRepository, DemographicBenchmark
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IDataTypeRepository, DataTypeRepository>();
 builder.Services.AddScoped<IUserBenchmarkRecordRepository, UserBenchmarkRecordRepository>();
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 
 // Add services to the container.
 
@@ -23,6 +25,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IHealthDataService, HealthDataService>();
 builder.Services.AddScoped<IDemographicBenchmarkService, DemographicBenchmarkService>();
 builder.Services.AddScoped<IUserBenchmarkRecordService, UserBenchmarkRecordService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

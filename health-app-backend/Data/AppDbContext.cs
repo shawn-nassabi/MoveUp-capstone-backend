@@ -14,5 +14,25 @@ public class AppDbContext : DbContext
     public DbSet<DataType> DataTypes { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<UserBenchmarkRecordModel> UserBenchmarkRecords { get; set; }
+    public DbSet<FriendRequest> FriendRequests { get; set; }
+    public DbSet<Friend> Friends { get; set; }
+    
+    // Need the following to resolve migration issues with the new friends and friendrequests models
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Friend>()
+            .HasOne(f => f.User)
+            .WithMany()
+            .HasForeignKey(f => f.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Friend>()
+            .HasOne(f => f.FriendUser)
+            .WithMany()
+            .HasForeignKey(f => f.FriendId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }
 

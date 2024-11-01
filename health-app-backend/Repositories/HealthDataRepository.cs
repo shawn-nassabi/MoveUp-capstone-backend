@@ -84,5 +84,14 @@ namespace health_app_backend.Repositories
                 .Include(hd => hd.User) // Eager load User
                 .Include(hd => hd.Datatype); // Eager load DataType
         }
+        
+        // Get friend activity for a specified date range
+        public async Task<IEnumerable<HealthData>> GetFriendActivityAsync(Guid friendId, DateTime fromDate, DateTime toDate)
+        {
+            return await _context.HealthData
+                .Where(hd => hd.UserId == friendId && hd.RecordedAt >= fromDate &&  hd.RecordedAt <= toDate)
+                .ToListAsync();
+        }
+
     }
 }
