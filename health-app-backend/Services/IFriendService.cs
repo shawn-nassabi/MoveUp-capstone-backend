@@ -5,7 +5,8 @@ namespace health_app_backend.Services;
 
 public interface IFriendService
 {
-    Task SendFriendRequest(Guid senderId, Guid receiverId);
+    Task<String> SendFriendRequest(Guid senderId, Guid receiverId);
+    Task<IEnumerable<FriendRequestReceivedDto>> GetFriendRequests(Guid userId);
     Task AcceptFriendRequest(Guid requestId);
     Task<IEnumerable<UserResponseDto>> GetFriendsAsync(Guid userId);
     Task<IEnumerable<HealthDataResponseDto>> GetFriendRecentActivity(Guid friendId);

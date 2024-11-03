@@ -1,5 +1,6 @@
 using AutoMapper;
 using health_app_backend.DTOs;
+using health_app_backend.Migrations;
 using health_app_backend.Models;
 
 namespace health_app_backend.Mappings
@@ -45,6 +46,7 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.AgeRange, opt => opt.MapFrom(src => src.DemographicBenchmark.AgeRange))
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.DemographicBenchmark.Gender))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+            
             // Map DemographicBenchmark to UserBenchmarkResponseDto
             CreateMap<DemographicBenchmark, UserBenchmarkResponseDto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore()) // Ignore or map if necessary
@@ -55,7 +57,14 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.RecommendedValue, opt => opt.MapFrom(src => src.RecommendedValue))
                 .ForMember(dest => dest.LocationName, opt => opt.MapFrom(src => src.Location.CityName))
                 .ForMember(dest => dest.UserDataValue, opt => opt.Ignore()); // UserDataValue not present in DemographicBenchmark
-
+            
+            // Map FriendRequestModel to FriendRequestReceivedDto
+            CreateMap<FriendRequest, FriendRequestReceivedDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.SenderId, opt => opt.MapFrom(src => src.SenderId))
+                .ForMember(dest => dest.SenderUsername, opt => opt.MapFrom(src => src.Sender.Username))
+                .ForMember(dest => dest.ReceiverId, opt => opt.MapFrom(src => src.ReceiverId))
+                .ForMember(dest => dest.ReceivedAt, opt => opt.MapFrom(src => src.SentAt));
         }
     }
 }

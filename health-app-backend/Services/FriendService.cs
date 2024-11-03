@@ -19,12 +19,22 @@ public class FriendService : IFriendService
         _healthDataRepository = healthDataRepository;
         _mapper = mapper;
     }
-
-    public async Task SendFriendRequest(Guid senderId, Guid receiverId)
+    
+    // Send friend request
+    public async Task<String> SendFriendRequest(Guid senderId, Guid receiverId)
     {
-        await _friendRequestRepository.SendFriendRequestAsync(senderId, receiverId);
+        string friendRequestResult = await _friendRequestRepository.SendFriendRequestAsync(senderId, receiverId);
+        return friendRequestResult;
     }
-
+    
+    // View friend requests
+    public async Task<IEnumerable<FriendRequestReceivedDto>> GetFriendRequests(Guid userId)
+    {
+        var friendRequests = await _friendRequestRepository.GetPendingRequestsAsync(userId);
+        return  _mapper.Map<IEnumerable<FriendRequestReceivedDto>>(friendRequests);
+    }
+    
+    // Accept friend request
     public async Task AcceptFriendRequest(Guid requestId)
     {
         await _friendRequestRepository.AcceptFriendRequestAsync(requestId);

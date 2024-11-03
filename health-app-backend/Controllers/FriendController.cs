@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace health_app_backend.Controllers;
 
 [ApiController]
-[Route("api/controller")]
+[Route("api/friends")]
 public class FriendController : Controller
 {
     private readonly IFriendService _friendService;
@@ -18,8 +18,8 @@ public class FriendController : Controller
     [HttpPost("send-request")]
     public async Task<IActionResult> SendFriendRequest([FromBody] FriendRequestDto friendRequestDto)
     {
-        await _friendService.SendFriendRequest(friendRequestDto.SenderId, friendRequestDto.ReceiverId);
-        return Ok("Friend request sent.");
+        string result = await _friendService.SendFriendRequest(friendRequestDto.SenderId, friendRequestDto.ReceiverId);
+        return Ok(result);
     }
 
     [HttpPost("accept-request/{requestId}")]
@@ -29,7 +29,21 @@ public class FriendController : Controller
         return Ok("Friend request accepted.");
     }
 
-    [HttpGet("{userId}/friends")]
+    [HttpGet("requests/{userId}")]
+    public async Task<ActionResult<IEnumerable<FriendRequestReceivedDto>>> GetFriendRequests(Guid userId)
+    {
+        try
+        {
+            var friendRequests = await _friendService.GetFriendRequests(userId);
+            return Ok(friendRequests);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("{userId}")]
     public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetFriends(Guid userId)
     {
         var friends = await _friendService.GetFriendsAsync(userId);

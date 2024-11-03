@@ -12,16 +12,49 @@ public class FriendRequestRepository : Repository<FriendRequest>, IFriendRequest
         _context = context;
     }
 
-    public async Task SendFriendRequestAsync(Guid senderId, Guid receiverId)
+    public async Task<String> SendFriendRequestAsync(Guid senderId, Guid receiverId)
     {
-        var request = new FriendRequest
+        // Check if a friend request already exists (pending or accepted)
+        var existingRequest = await _context.FriendRequests
+            .FirstOrDefaultAsync(fr =>
+                (fr.SenderId == senderId && fr.ReceiverId == receiverId) ||
+                (fr.SenderId == receiverId && fr.ReceiverId == senderId));
+        
+        if (existingRequest != null)
         {
-            Id = Guid.NewGuid(),
-            SenderId = senderId,
-            ReceiverId = receiverId
-        };
-        await _context.FriendRequests.AddAsync(request);
-        await _context.SaveChangesAsync();
+            if (existingRequest.IsPending)
+            {
+                return "A friend request is already pending.";
+            }
+            if (existingRequest.IsAccepted)
+            {
+                return "You are already friends.";
+            }
+        }
+        
+        // Create the friend request if all checks pass
+        try
+        {
+            var request = new FriendRequest
+            {
+                Id = Guid.NewGuid(),
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                SentAt = DateTime.UtcNow,
+                IsPending = true,
+                IsAccepted = false
+            };
+
+            await _context.FriendRequests.AddAsync(request);
+            await _context.SaveChangesAsync();
+
+            return "Friend request sent successfully.";
+        }
+        catch (Exception ex)
+        {
+            // Log exception if you have a logging mechanism
+            return $"An error occurred while sending the friend request: {ex.Message}";
+        }
     }
 
     public async Task AcceptFriendRequestAsync(Guid requestId)
@@ -45,6 +78,7 @@ public class FriendRequestRepository : Repository<FriendRequest>, IFriendRequest
     {
         return await _context.FriendRequests
             .Where(r => r.ReceiverId == userId && r.IsPending)
+            .Include(r => r.Sender)
             .ToListAsync();
     }
 }
