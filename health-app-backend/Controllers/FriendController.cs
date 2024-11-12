@@ -29,6 +29,24 @@ public class FriendController : Controller
         return Ok("Friend request accepted.");
     }
 
+    [HttpPost("decline-request/{requestId}")]
+    public async Task<IActionResult> DeclineFriendRequest(Guid requestId)
+    {
+        await _friendService.DeclineFriendRequest(requestId);
+        return Ok("Friend request declined.");
+    }
+
+    [HttpDelete("{userId}/{friendId}")]
+    public async Task<IActionResult> DeleteFriend(Guid userId, Guid friendId)
+    {
+        if (await _friendService.DeleteFriend(userId, friendId))
+        {
+            return Ok("Friend deleted.");
+        }
+
+        return BadRequest("Friend not found.");
+    }
+
     [HttpGet("requests/{userId}")]
     public async Task<ActionResult<IEnumerable<FriendRequestReceivedDto>>> GetFriendRequests(Guid userId)
     {
@@ -50,10 +68,10 @@ public class FriendController : Controller
         return Ok(friends);
     }
 
-    [HttpGet("{friendId}/activity")]
-    public async Task<ActionResult<IEnumerable<HealthDataResponseDto>>> GetFriendActivity(Guid friendId)
-    {
-        var activity = await _friendService.GetFriendRecentActivity(friendId);
-        return Ok(activity);
-    }
+    // [HttpGet("{friendId}/activity")]
+    // public async Task<ActionResult<IEnumerable<HealthDataResponseDto>>> GetFriendActivity(Guid friendId)
+    // {
+    //     var activity = await _friendService.GetFriendRecentActivity(friendId);
+    //     return Ok(activity);
+    // }
 }

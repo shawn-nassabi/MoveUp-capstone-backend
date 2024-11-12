@@ -16,6 +16,11 @@ public class AppDbContext : DbContext
     public DbSet<UserBenchmarkRecordModel> UserBenchmarkRecords { get; set; }
     public DbSet<FriendRequest> FriendRequests { get; set; }
     public DbSet<Friend> Friends { get; set; }
+    public DbSet<Clan> Clans { get; set; }
+    public DbSet<ClanMember> ClanMembers { get; set; }
+    public DbSet<ClanJoinRequest> ClanJoinRequests { get; set; }
+    public DbSet<ClanChallenge> ClanChallenges { get; set; }
+    public DbSet<ClanChallengeProgress> ClanChallengeProgresses { get; set; }
     
     // Need the following to resolve migration issues with the new friends and friendrequests models
     protected override void OnModelCreating(ModelBuilder modelBuilder)

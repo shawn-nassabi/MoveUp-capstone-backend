@@ -39,6 +39,19 @@ public class FriendService : IFriendService
     {
         await _friendRequestRepository.AcceptFriendRequestAsync(requestId);
     }
+    
+    // Decline friend request
+    public async Task DeclineFriendRequest(Guid requestId)
+    {
+        await _friendRequestRepository.DeclineFriendRequestAsync(requestId);
+    }
+    
+    
+    // Delete friend
+    public async Task<bool> DeleteFriend(Guid userId, Guid friendId)
+    {
+        return await _friendRepository.DeleteFriendAsync(userId, friendId);
+    }
 
     public async Task<IEnumerable<UserResponseDto>> GetFriendsAsync(Guid userId)
     {

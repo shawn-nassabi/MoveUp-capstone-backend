@@ -74,6 +74,16 @@ public class FriendRequestRepository : Repository<FriendRequest>, IFriendRequest
         }
     }
 
+    public async Task DeclineFriendRequestAsync(Guid requestId)
+    {
+        var request = await _context.FriendRequests.FindAsync(requestId);
+        if (request != null && request.IsPending)
+        {
+            _context.FriendRequests.Remove(request); // Remove the friend request from the database
+            await _context.SaveChangesAsync();
+        }
+    }
+
     public async Task<IEnumerable<FriendRequest>> GetPendingRequestsAsync(Guid userId)
     {
         return await _context.FriendRequests

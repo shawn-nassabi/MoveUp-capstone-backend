@@ -24,7 +24,7 @@ public class UserController : ControllerBase
     }
     
     // Get a user using their userID
-    [HttpGet("id/{userId}")]
+    [HttpGet("{userId}")]
     public async Task<ActionResult<UserResponseDto>> GetUserById(string userId)
     {
         var user = await _userService.GetUserAsync(userId);
@@ -64,7 +64,7 @@ public class UserController : ControllerBase
     }
     
     // Update an existing user
-    [HttpPut("id/{userId}")]
+    [HttpPut("{userId}")]
     public async Task<ActionResult> UpdateUser(string userId, UserUpdateDto updatedUser)
     {
         var updateSuccess = await _userService.UpdateUserAsync(userId, updatedUser);
