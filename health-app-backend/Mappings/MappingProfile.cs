@@ -65,6 +65,32 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.SenderUsername, opt => opt.MapFrom(src => src.Sender.Username))
                 .ForMember(dest => dest.ReceiverId, opt => opt.MapFrom(src => src.ReceiverId))
                 .ForMember(dest => dest.ReceivedAt, opt => opt.MapFrom(src => src.SentAt));
+            
+            // Map ClanJoinRequestModel to ClanInviteDto
+            CreateMap<ClanJoinRequest, ClanInviteDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.ClanName, opt => opt.MapFrom(src => src.Clan.Name))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.RequestedAt));
+            
+            // Map Clan to ClanSearchDto
+            CreateMap<ClanSearchDto, Clan>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location));
+            
+            // Map Clan to ClanDetailsDto
+            CreateMap<Clan, ClanDetailsDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.Members, opt => opt.MapFrom(src => src.Members));
+            
+            // Map ClanMember to ClanMemberDto
+            CreateMap<ClanMember, ClanMemberDto>()
+                .ForMember(dest => dest.MemberId, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId.ToString()))
+                .ForMember(dest => dest.ClanId, opt => opt.MapFrom(src => src.ClanId.ToString()))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username));
         }
     }
 }

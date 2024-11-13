@@ -18,6 +18,9 @@ builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 builder.Services.AddScoped<IClanRepository, ClanRepository>();
 builder.Services.AddScoped<IClanMemberRepository, ClanMemberRepository>();
+builder.Services.AddScoped<IClanJoinRequestRepository, ClanJoinRequestRepository>();
+builder.Services.AddScoped<IClanChallengeRepository, ClanChallengeRepository>();
+builder.Services.AddScoped<IClanChallengeProgressRepository, ClanChallengeProgressRepository>();
 
 // Add services to the container.
 
@@ -28,6 +31,7 @@ builder.Services.AddScoped<IHealthDataService, HealthDataService>();
 builder.Services.AddScoped<IDemographicBenchmarkService, DemographicBenchmarkService>();
 builder.Services.AddScoped<IUserBenchmarkRecordService, UserBenchmarkRecordService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IClanService, ClanService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
