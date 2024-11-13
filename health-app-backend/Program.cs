@@ -16,6 +16,8 @@ builder.Services.AddScoped<IDataTypeRepository, DataTypeRepository>();
 builder.Services.AddScoped<IUserBenchmarkRecordRepository, UserBenchmarkRecordRepository>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
+builder.Services.AddScoped<IClanRepository, ClanRepository>();
+builder.Services.AddScoped<IClanMemberRepository, ClanMemberRepository>();
 
 // Add services to the container.
 
