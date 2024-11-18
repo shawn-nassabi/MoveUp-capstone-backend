@@ -32,6 +32,7 @@ builder.Services.AddScoped<IDemographicBenchmarkService, DemographicBenchmarkSer
 builder.Services.AddScoped<IUserBenchmarkRecordService, UserBenchmarkRecordService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IClanService, ClanService>();
+builder.Services.AddScoped<IDataTypeService, DataTypeService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
