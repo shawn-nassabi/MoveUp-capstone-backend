@@ -74,7 +74,7 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.RequestedAt));
             
             // Map Clan to ClanSearchDto
-            CreateMap<ClanSearchDto, Clan>()
+            CreateMap<Clan, ClanSearchDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
@@ -91,6 +91,18 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId.ToString()))
                 .ForMember(dest => dest.ClanId, opt => opt.MapFrom(src => src.ClanId.ToString()))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Username));
+            
+            // Map ClanChallenge to ClanChallengeDto
+            CreateMap<ClanChallenge, ClanChallengeDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
+                .ForMember(dest => dest.ClanId, opt => opt.MapFrom(src => src.ClanId.ToString()))
+                .ForMember(dest => dest.ChallengeName, opt => opt.MapFrom(src => src.ChallengeName))
+                .ForMember(dest => dest.ChallengeDescription, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Goal, opt => opt.MapFrom(src => src.Goal))
+                .ForMember(dest => dest.DataType, opt => opt.MapFrom(src => src.DataType))
+                .ForMember(dest => dest.TotalProgress, opt => opt.MapFrom(src => src.TotalProgress))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate));
         }
     }
 }

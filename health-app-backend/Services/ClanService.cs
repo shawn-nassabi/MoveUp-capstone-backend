@@ -11,16 +11,19 @@ public class ClanService : IClanService
     private readonly IUserRepository _userRepository;
     private readonly IClanJoinRequestRepository _clanJoinRequestRepository;
     private readonly IMapper _mapper;
+    private readonly IClanChallengeRepository _clanChallengeRepository;
 
     public ClanService(
         IClanRepository clanRepository,
         IUserRepository userRepository,
         IClanJoinRequestRepository clanJoinRequestRepository,
+        IClanChallengeRepository clanChallengeRepository,
         IMapper mapper)
     {
         _clanRepository = clanRepository;
         _userRepository = userRepository;
         _clanJoinRequestRepository = clanJoinRequestRepository;
+        _clanChallengeRepository = clanChallengeRepository;
         _mapper = mapper;
     }
     
@@ -35,7 +38,6 @@ public class ClanService : IClanService
 
     public async Task<ClanDetailsDto> GetClanDetailsAsync(string clanId)
     {
-        // TODO, should get clan details, as well as members
         // Parse the clanId from string to Guid
         if (!Guid.TryParse(clanId, out var clanGuid))
         {
@@ -66,6 +68,7 @@ public class ClanService : IClanService
         {
             Id = Guid.NewGuid(),
             Name = details.Name,
+            Description = details.Description,
             Location = details.Location,
             LeaderId = Guid.Parse(details.LeaderId),
             Members = new List<ClanMember>
@@ -148,5 +151,43 @@ public class ClanService : IClanService
     {
         var invites = await _clanJoinRequestRepository.GetPendingRequestsForClanAsync(Guid.Parse(clanId));
         return _mapper.Map<IEnumerable<ClanInviteDto>>(invites);
+    }
+    
+    // Get Clan Challenges ---------------------------------------------------------------------------------------------------
+    public async Task<IEnumerable<ClanChallengeDto>> GetClanChallenges(string clanId)
+    {
+        try
+        {
+            var challenges = await _clanChallengeRepository.GetChallengesByClanIdAsync(Guid.Parse(clanId));
+            return _mapper.Map<IEnumerable<ClanChallengeDto>>(challenges);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    // Update Clan Challenge Progress ---------------------------------------------------------------------------------------------------
+    public async Task UpdateClanChallengeProgress(Guid clanId, string dataType, float contributionAmount)
+    {
+        var activeChallenges = await _clanChallengeRepository.GetChallengesByClanIdAsync(clanId);
+        
+        // Iterate over each challenge and update the progress if criteria are met
+        foreach (var challenge in activeChallenges)
+        {
+            if (challenge.EndDate > DateTime.UtcNow && challenge.DataType == dataType)
+            {
+                // Update the progress
+                challenge.TotalProgress += contributionAmount;
+                
+
+                // Save the updated challenge
+                _clanChallengeRepository.Update(challenge);
+            }
+        }
+        
+        await _clanChallengeRepository.SaveChangesAsync();
+        
     }
 }
