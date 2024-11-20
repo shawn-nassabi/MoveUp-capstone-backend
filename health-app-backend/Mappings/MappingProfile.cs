@@ -99,6 +99,7 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.ChallengeName, opt => opt.MapFrom(src => src.ChallengeName))
                 .ForMember(dest => dest.ChallengeDescription, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Goal, opt => opt.MapFrom(src => src.Goal))
+                .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => src.IsCompleted))
                 .ForMember(dest => dest.DataType, opt => opt.MapFrom(src => src.DataType))
                 .ForMember(dest => dest.TotalProgress, opt => opt.MapFrom(src => src.TotalProgress))
                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate))

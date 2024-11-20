@@ -168,6 +168,78 @@ public class ClanService : IClanService
         }
     }
     
+    // Create Clan Challenge ---------------------------------------------------------------------------------------------------
+    public async Task<ClanChallengeDto> CreateClanChallenge(ClanChallengeCreateDto details)
+    {
+        // Daily target goal for each data category
+        // Steps = 10,000
+        // Calories = 650
+        // Sleep = 7
+        
+        var clan = await _clanRepository.GetClanWithMembersAsync(Guid.Parse(details.ClanId));
+        if (clan == null)
+        {
+            throw new Exception("Clan not found.");
+        }
+        
+        int numOfMembers = clan.Members.Count;
+        
+        // Check for active challenges
+        var activeChallenges = clan.Challenges.Where(c => c.EndDate > DateTime.UtcNow).ToList();
+        if (activeChallenges.Any())
+        {
+            if (clan.ChallengePoints < 50)
+            {
+                throw new Exception("Not enough ChallengePoints to create a new challenge. You need at least 50 points.");
+            }
+
+            // Deduct 50 ChallengePoints from the clan
+            clan.ChallengePoints -= 50;
+            _clanRepository.Update(clan);
+            await _clanRepository.SaveChangesAsync();
+        }
+        
+        // Set parameters for challenge goal calculation
+        float memberTargetSuccessRate = 0.75f; // Percentage of days in the month that members are expected to hit the expected daily goal
+        int challengeDuration = 30; // Challenge duration in days
+        Random random = new Random();
+        float variation = (float)(random.NextDouble() * (1 - 0.7f) + 0.7f); // Add some randomness to the value generated
+        
+        float dailyGoal = details.DataType switch
+        {
+            "steps" => 10000,
+            "calories" => 650,
+            "sleep" => 7,
+            _ => throw new Exception("Unsupported data type for challenge.")
+        };
+
+        // Calculate the total goal for the challenge
+        float challengeGoal = memberTargetSuccessRate * dailyGoal * numOfMembers * challengeDuration * variation;
+
+        var clanChallenge = new ClanChallenge
+        {
+            Id = Guid.NewGuid(),
+            ClanId = clan.Id,
+            ChallengeName = details.ChallengeName,
+            Description = details.ChallengeDescription,
+            DataType = details.DataType,
+            Goal = challengeGoal,
+            TotalProgress = 0f,
+            StartDate = DateTime.UtcNow,
+            EndDate = DateTime.UtcNow.AddDays(challengeDuration),
+        };
+        
+        // Persist the challenge and update the clan
+        await _clanChallengeRepository.AddAsync(clanChallenge);
+        await _clanChallengeRepository.SaveChangesAsync();
+        
+        clan.Challenges.Add(clanChallenge);
+        _clanRepository.Update(clan);
+        await _clanRepository.SaveChangesAsync();
+        
+        return _mapper.Map<ClanChallengeDto>(clanChallenge);
+    }
+    
     // Update Clan Challenge Progress ---------------------------------------------------------------------------------------------------
     public async Task UpdateClanChallengeProgress(Guid clanId, string dataType, float contributionAmount)
     {
@@ -180,14 +252,26 @@ public class ClanService : IClanService
             {
                 // Update the progress
                 challenge.TotalProgress += contributionAmount;
+                if (challenge.TotalProgress >= challenge.Goal && challenge.IsCompleted == false)
+                {
+                    challenge.IsCompleted = true;
+                    await ClanChallengeCompleted(clanId); // This will award 150 challenge points to the clan
+                }
                 
-
                 // Save the updated challenge
                 _clanChallengeRepository.Update(challenge);
             }
         }
         
         await _clanChallengeRepository.SaveChangesAsync();
-        
+    }
+    
+    // Award clan challenge points when a challenge is completed ---------------------------------------------------------------------------------------------------
+    private async Task ClanChallengeCompleted(Guid clanId)
+    {
+        var clan = await _clanRepository.GetByIdAsync(clanId);
+        clan.ChallengePoints += 150f;
+        _clanRepository.Update(clan);
+        await _clanRepository.SaveChangesAsync();
     }
 }

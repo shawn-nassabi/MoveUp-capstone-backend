@@ -8,6 +8,7 @@ public class ClanChallengeDto
     public string ChallengeDescription { get; set; }
     public string DataType { get; set; }
     public float Goal { get; set; }
+    public bool IsCompleted { get; set; }
     public float TotalProgress { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

@@ -6,6 +6,7 @@ public class Clan
     public string Name { get; set; }
     public string Description { get; set; }
     public string Location { get; set; }
+    public float ChallengePoints { get; set; } = 0.0f;
 
     // Relationship to leader
     public Guid LeaderId { get; set; }

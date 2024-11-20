@@ -12,5 +12,6 @@ public interface IClanService
     Task<bool> DeclineClanInvite(string requestId);
     Task<IEnumerable<ClanInviteDto>> GetClanInvites(string clanId);
     Task<IEnumerable<ClanChallengeDto>> GetClanChallenges(string clanId);
+    Task<ClanChallengeDto> CreateClanChallenge(ClanChallengeCreateDto details);
     Task UpdateClanChallengeProgress(Guid clanId, string dataType, float contributionAmount);
 }

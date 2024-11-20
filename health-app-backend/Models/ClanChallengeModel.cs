@@ -11,6 +11,7 @@ public class ClanChallenge
     public string DataType { get; set; } // e.g., "steps" or "calories"
 
     public float Goal { get; set; } // e.g., 50000 for steps
+    public bool IsCompleted { get; set; } = false;
     public float TotalProgress { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

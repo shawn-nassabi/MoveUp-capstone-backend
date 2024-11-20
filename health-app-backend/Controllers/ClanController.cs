@@ -154,4 +154,29 @@ public class ClanController : ControllerBase
          return StatusCode(500, new { message = "An error occurred while fetching challenges.", details = ex.Message });
       }
    }
+
+   [HttpPost("{clanId}/challenge")]
+   public async Task<ActionResult<ClanChallengeDto>> CreateClanChallenge([FromBody] ClanChallengeCreateDto details)
+   {
+      try
+      {
+         // Validate the input ClanId matches the one in the route
+         if (details.ClanId != null && !details.ClanId.Equals(details.ClanId))
+         {
+            return BadRequest(new { message = "Clan ID in the route does not match the Clan ID in the body." });
+         }
+
+         var clanChallenge = await _clanService.CreateClanChallenge(details);
+         return CreatedAtAction(nameof(GetClanChallenges), new { clanId = details.ClanId }, clanChallenge);
+      }
+      catch (ArgumentException ex)
+      {
+         return BadRequest(new { message = ex.Message });
+      }
+      catch (Exception ex)
+      {
+         return StatusCode(500, new { message = "An error occurred while creating the challenge.", details = ex.Message });
+      }
+   }
+
 }
