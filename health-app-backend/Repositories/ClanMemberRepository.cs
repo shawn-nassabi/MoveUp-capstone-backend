@@ -44,6 +44,7 @@ public class ClanMemberRepository : Repository<ClanMember>, IClanMemberRepositor
     
         if (member == null)
         {
+            Console.WriteLine("Member not found in clan.");
             return false; // Member not found in the specified clan
         }
 

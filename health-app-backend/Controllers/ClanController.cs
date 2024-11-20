@@ -140,6 +140,30 @@ public class ClanController : ControllerBase
       }
    }
    
+   // Leave clan
+   [HttpPost("{clanId}/leave/{userId}")]
+   public async Task<ActionResult> LeaveClan(string clanId, string userId)
+   {
+      try
+      {
+         var result = await _clanService.LeaveClan(clanId, userId);
+         if (result)
+         {
+            return Ok(new { message = "Clan left successfully." });
+         }
+         else
+         {
+            return BadRequest(new { message = "Failed to leave clan." });
+         }
+      }
+      catch (Exception e)
+      {
+         Console.WriteLine(e);
+         return StatusCode(500, new { message = e.Message });
+         throw;
+      }
+   }
+   
    // Get all challenges for a clan
    [HttpGet("{clanId}/challenges")]
    public async Task<ActionResult<IEnumerable<ClanChallengeDto>>> GetClanChallenges(string clanId)

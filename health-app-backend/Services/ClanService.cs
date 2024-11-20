@@ -12,18 +12,21 @@ public class ClanService : IClanService
     private readonly IClanJoinRequestRepository _clanJoinRequestRepository;
     private readonly IMapper _mapper;
     private readonly IClanChallengeRepository _clanChallengeRepository;
+    private readonly IClanMemberRepository _clanMemberRepository;
 
     public ClanService(
         IClanRepository clanRepository,
         IUserRepository userRepository,
         IClanJoinRequestRepository clanJoinRequestRepository,
         IClanChallengeRepository clanChallengeRepository,
+        IClanMemberRepository clanMemberRepository,
         IMapper mapper)
     {
         _clanRepository = clanRepository;
         _userRepository = userRepository;
         _clanJoinRequestRepository = clanJoinRequestRepository;
         _clanChallengeRepository = clanChallengeRepository;
+        _clanMemberRepository = clanMemberRepository;
         _mapper = mapper;
     }
     
@@ -144,6 +147,12 @@ public class ClanService : IClanService
 
         await _clanJoinRequestRepository.RejectJoinRequestAsync(request.Id);
         return true;
+    }
+    
+    // Leave Clan ---------------------------------------------------------------------------------------------------
+    public async Task<bool> LeaveClan(string clanId, string userId)
+    {
+        return await _clanMemberRepository.RemoveMemberFromClanAsync(Guid.Parse(clanId), Guid.Parse(userId));
     }
     
     // Get Clan Invites ---------------------------------------------------------------------------------------------------
