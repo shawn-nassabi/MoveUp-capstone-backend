@@ -92,6 +92,13 @@ public class ClanService : IClanService
         return clan.Id.ToString();
     }
     
+    // Get Clan Member's Info ---------------------------------------------------------------------------------------------------
+    public async Task<ClanMemberDto> GetClanMemberAsync(string userId)
+    {
+        var memberDetails = await _clanMemberRepository.GetByUserIdAsync(Guid.Parse(userId));
+        return _mapper.Map<ClanMemberDto>(memberDetails);
+    }
+    
     // Send Clan Invite ---------------------------------------------------------------------------------------------------
     public async Task<bool> SendClanInvite(string clanId, string userId)
     {

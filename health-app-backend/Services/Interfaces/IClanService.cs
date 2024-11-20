@@ -7,6 +7,7 @@ public interface IClanService
     Task<string> CreateClan(ClanCreateDto details);
     Task<IEnumerable<ClanSearchDto>> GetClansAsync();
     Task<ClanDetailsDto> GetClanDetailsAsync(string clanId);
+    Task<ClanMemberDto> GetClanMemberAsync(string userId);
     Task<bool> SendClanInvite(string clanId, string userId);
     Task<bool> AcceptClanInvite(string requestId);
     Task<bool> DeclineClanInvite(string requestId);

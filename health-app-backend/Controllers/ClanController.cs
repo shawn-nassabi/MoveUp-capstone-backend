@@ -68,6 +68,22 @@ public class ClanController : ControllerBase
       }
    }
    
+   // Get a clan member's details
+   [HttpGet("{clanId}/member/{userId}")]
+   public async Task<ActionResult<ClanMemberDto>> GetClanMemberDetails(string userId)
+   {
+      try
+      {
+         return await _clanService.GetClanMemberAsync(userId);
+      }
+      catch (Exception e)
+      {
+         Console.WriteLine(e);
+         return StatusCode(500, new { message = e.Message });
+         throw;
+      }
+   }
+   
    // Send a clan invite
    [HttpPost("{clanId}/invite/{userId}")]
    public async Task<ActionResult> SendClanInvite(string clanId, string userId)
