@@ -3,6 +3,7 @@ namespace health_app_backend.DTOs;
 public class UserBenchmarkResponseDto
 {
     public Guid Id { get; set; }
+    public int dataTypeId { get; set; }
     public string AgeRange { get; set; }
     public string Gender { get; set; }
     public string TimeFrame { get; set; }

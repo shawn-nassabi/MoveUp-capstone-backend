@@ -36,6 +36,7 @@ namespace health_app_backend.Mappings
             // Map UserBenchmarkRecord to UserBenchmarkResponseDto
             CreateMap<UserBenchmarkRecordModel, UserBenchmarkResponseDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.dataTypeId, opt => opt.MapFrom(src => src.DemographicBenchmark.DataTypeId))
                 .ForMember(dest => dest.UserDataValue, opt => opt.MapFrom(src => src.DataValue))
                 .ForMember(dest => dest.AverageValue, opt => opt.MapFrom(src => src.DemographicBenchmark.AverageValue))
                 .ForMember(dest => dest.RecommendedValue,
@@ -78,7 +79,8 @@ namespace health_app_backend.Mappings
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id.ToString()))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location));
+                .ForMember(dest => dest.Location, opt => opt.MapFrom(src => src.Location))
+                .ForMember(dest => dest.ChallengePoints, opt => opt.MapFrom(src => src.ChallengePoints));
             
             // Map Clan to ClanDetailsDto
             CreateMap<Clan, ClanDetailsDto>()

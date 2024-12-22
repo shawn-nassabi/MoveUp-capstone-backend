@@ -69,12 +69,17 @@ public class ClanController : ControllerBase
    }
    
    // Get a clan member's details
-   [HttpGet("{clanId}/member/{userId}")]
+   [HttpGet("member/{userId}")]
    public async Task<ActionResult<ClanMemberDto>> GetClanMemberDetails(string userId)
    {
       try
       {
-         return await _clanService.GetClanMemberAsync(userId);
+         var result =  await _clanService.GetClanMemberAsync(userId);
+         if (result == null)
+         {
+            return NotFound(new { message = "Clan member not found." });
+         }
+         return Ok(result);
       }
       catch (Exception e)
       {

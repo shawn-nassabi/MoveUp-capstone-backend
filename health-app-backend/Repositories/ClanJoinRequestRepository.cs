@@ -17,6 +17,7 @@ public class ClanJoinRequestRepository : Repository<ClanJoinRequest>, IClanJoinR
         return await _context.ClanJoinRequests
             .Where(r => r.ClanId == clanId && r.IsPending)
             .Include(r => r.User) // Include user details for each join request
+            .Include(r => r.Clan)
             .ToListAsync();
     }
 

@@ -102,8 +102,13 @@ namespace health_app_backend.Services
                 throw new Exception("Invalid UserId provided.");
             }
             
+            // Calculate the user's local day based on their time zone offset
+            var userLocalDate = healthDataCreateDto.RecordedAt.AddMinutes(healthDataCreateDto.TimeZoneOffset).Date;
+            Console.WriteLine($"User's local date: {userLocalDate}");
+            
             // This will be used to automatically contribute towards clan challenges when data is updated
             float contributionAmount;
+            Console.WriteLine($"Adding health data for date: {healthDataCreateDto.RecordedAt}");
             
             string idToReturn = null;
             
@@ -112,7 +117,7 @@ namespace health_app_backend.Services
                 .GetAll() // Assuming GetAll() returns IQueryable<HealthData>
                 .Where(hd => hd.UserId == healthDataCreateDto.UserId &&
                              hd.DatatypeId == healthDataCreateDto.DatatypeId &&
-                             hd.RecordedAt.Date == healthDataCreateDto.RecordedAt.Date)
+                             hd.RecordedAt.AddMinutes(healthDataCreateDto.TimeZoneOffset).Date == userLocalDate)
                 .FirstOrDefaultAsync();
             
             if (existingHealthData != null)

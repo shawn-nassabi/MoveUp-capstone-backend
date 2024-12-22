@@ -25,4 +25,25 @@ public class ClanRepository : Repository<Clan>, IClanRepository
             .Where(c => c.Location == location)
             .ToListAsync();
     }
+
+    public async Task<bool> DeleteClanAsync(Guid clanId)
+    {
+        // Find the clan by its ID
+        var clan = await _context.Clans.FindAsync(clanId);
+
+        // If the clan does not exist, return false
+        if (clan == null)
+        {
+            return false;
+        }
+
+        // Remove the clan from the DbContext
+        _context.Clans.Remove(clan);
+
+        // Save changes to the database
+        await _context.SaveChangesAsync();
+
+        // Return true to indicate successful deletion
+        return true;
+    }
 }

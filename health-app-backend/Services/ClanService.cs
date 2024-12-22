@@ -96,6 +96,10 @@ public class ClanService : IClanService
     public async Task<ClanMemberDto> GetClanMemberAsync(string userId)
     {
         var memberDetails = await _clanMemberRepository.GetByUserIdAsync(Guid.Parse(userId));
+        if (memberDetails == null)
+        {
+            return null;
+        }
         return _mapper.Map<ClanMemberDto>(memberDetails);
     }
     
@@ -159,7 +163,13 @@ public class ClanService : IClanService
     // Leave Clan ---------------------------------------------------------------------------------------------------
     public async Task<bool> LeaveClan(string clanId, string userId)
     {
-        return await _clanMemberRepository.RemoveMemberFromClanAsync(Guid.Parse(clanId), Guid.Parse(userId));
+        var result = await _clanMemberRepository.RemoveMemberFromClanAsync(Guid.Parse(clanId), Guid.Parse(userId));
+        var clanDetails = await _clanRepository.GetClanWithMembersAsync(Guid.Parse(clanId));
+        if (clanDetails.Members.Count == 0)
+        {
+            await _clanRepository.DeleteClanAsync(Guid.Parse(clanId));
+        }
+        return result;
     }
     
     // Get Clan Invites ---------------------------------------------------------------------------------------------------
@@ -260,6 +270,8 @@ public class ClanService : IClanService
     public async Task UpdateClanChallengeProgress(Guid clanId, string dataType, float contributionAmount)
     {
         var activeChallenges = await _clanChallengeRepository.GetChallengesByClanIdAsync(clanId);
+        Console.WriteLine("Inside update clan challenge progress");
+        contributionAmount = Math.Max(contributionAmount, 0);
         
         // Iterate over each challenge and update the progress if criteria are met
         foreach (var challenge in activeChallenges)
@@ -267,6 +279,9 @@ public class ClanService : IClanService
             if (challenge.EndDate > DateTime.UtcNow && challenge.DataType == dataType)
             {
                 // Update the progress
+                Console.WriteLine("Updating challenge progress");
+                // Log the contribution amount to the console
+                Console.WriteLine($"Contribution Amount: {contributionAmount}");
                 challenge.TotalProgress += contributionAmount;
                 if (challenge.TotalProgress >= challenge.Goal && challenge.IsCompleted == false)
                 {
