@@ -3,3 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+/health-app-backend/appsettings.json
+/health-app-backend/appsettings.Development.json
+**/appsettings.json
