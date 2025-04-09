@@ -4,6 +4,7 @@ using health_app_backend.Models;
 using Microsoft.EntityFrameworkCore;
 using health_app_backend.Repositories;
 using health_app_backend.Services;
+using Nethereum.BlockchainProcessing.BlockStorage.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<IUserBenchmarkRecordService, UserBenchmarkRecordServi
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IClanService, ClanService>();
 builder.Services.AddScoped<IDataTypeService, DataTypeService>();
+builder.Services.AddScoped<IBlockchainService, BlockchainService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
