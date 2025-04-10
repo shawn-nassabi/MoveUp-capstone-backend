@@ -1,4 +1,5 @@
 using health_app_backend;
+using health_app_backend.Jobs;
 using health_app_backend.Mappings;
 using health_app_backend.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ builder.Services.AddScoped<IClanMemberRepository, ClanMemberRepository>();
 builder.Services.AddScoped<IClanJoinRequestRepository, ClanJoinRequestRepository>();
 builder.Services.AddScoped<IClanChallengeRepository, ClanChallengeRepository>();
 builder.Services.AddScoped<IClanChallengeProgressRepository, ClanChallengeProgressRepository>();
+builder.Services.AddScoped<IDailySyncRecordRepository, DailySyncRecordRepository>();
 
 // Add services to the container.
 
@@ -35,6 +37,9 @@ builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IClanService, ClanService>();
 builder.Services.AddScoped<IDataTypeService, DataTypeService>();
 builder.Services.AddScoped<IBlockchainService, BlockchainService>();
+
+// Add Hosted Services
+builder.Services.AddHostedService<DataSyncJob>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

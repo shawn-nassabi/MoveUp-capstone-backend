@@ -9,4 +9,5 @@ public interface IHealthDataService
     Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUsernameAndFromDateAsync(string username, string fromDate, string toDate);
     Task<IEnumerable<HealthDataResponseDto>> GetHealthDataByUserIdAndTypeAsync(Guid userId, int datatypeId);
     Task<string> AddHealthDataAsync(HealthDataCreateDto healthDataCreateDto);
+    Task SyncYesterdayDataAsync(Guid userId, DateTime userLocalNow);
 }

@@ -27,4 +27,18 @@ public class UserRepository : Repository<User>, IUserRepository
             .Include(u => u.Location) // Eager load Location
             .ToListAsync();
     }
+
+    public async Task<string> GetWalletAddressByUserIdAsync(Guid userId)
+    {
+        var user = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            throw new Exception("User not found.");
+        }
+
+        return user.WalletAddress;
+    }
 }

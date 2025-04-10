@@ -21,6 +21,7 @@ public class AppDbContext : DbContext
     public DbSet<ClanJoinRequest> ClanJoinRequests { get; set; }
     public DbSet<ClanChallenge> ClanChallenges { get; set; }
     public DbSet<ClanChallengeProgress> ClanChallengeProgresses { get; set; }
+    public DbSet<DailySyncRecord> DailySyncRecords { get; set; }
     
     // Need the following to resolve migration issues with the new friends and friendrequests models
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,5 +1,7 @@
+using System.Text;
 using AutoMapper;
 using health_app_backend.DTOs;
+using health_app_backend.Helpers;
 using health_app_backend.Models;
 using health_app_backend.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +16,19 @@ namespace health_app_backend.Services
         private readonly IClanMemberRepository _clanMemberRepository;
         private readonly IClanService _clanService;
         private readonly IDataTypeRepository _dataTypeRepository;
+        private readonly IDailySyncRecordRepository _dailySyncRecordRepository;
+        private readonly IBlockchainService _blockchainService;
 
-        public HealthDataService(IHealthDataRepository healthDataRepository, IUserRepository userRepository, IClanMemberRepository clanMemberRepository, IDataTypeRepository dataTypeRepository, IClanService clanService, IMapper mapper)
+        public HealthDataService(IHealthDataRepository healthDataRepository, IUserRepository userRepository, IClanMemberRepository clanMemberRepository, IDataTypeRepository dataTypeRepository, IDailySyncRecordRepository dailySyncRecordRepository, IClanService clanService, IMapper mapper, IBlockchainService blockchainService)
         {
             _healthDataRepository = healthDataRepository;
             _userRepository = userRepository;
             _clanMemberRepository = clanMemberRepository;
             _dataTypeRepository = dataTypeRepository;
+            _dailySyncRecordRepository =  dailySyncRecordRepository;
             _clanService = clanService;
             _mapper = mapper;
+            _blockchainService = blockchainService;
         }
 
         // Get HealthData by Id
@@ -160,6 +166,58 @@ namespace health_app_backend.Services
             }
 
             return idToReturn;
+        }
+        
+        // Sync data with the blockchain
+        public async Task SyncYesterdayDataAsync(Guid userId, DateTime userLocalNow)
+        {
+            var yesterdayDate = userLocalNow.Date.AddDays(-1);
+
+            // Check if already synced
+            var alreadySynced = await _dailySyncRecordRepository.IsSynced(userId, yesterdayDate);
+            if (alreadySynced)
+            {
+                Console.WriteLine($"Data for {yesterdayDate} already synced on-chain.");
+                return;
+            }
+
+            // Get HealthData records for yesterday
+            var healthDataRecords = await _healthDataRepository.GetAllByUserIdAndDateRangeAsync(
+                userId,
+                yesterdayDate,
+                yesterdayDate.AddDays(1).AddTicks(-1)
+            );
+
+            if (!healthDataRecords.Any())
+            {
+                Console.WriteLine($"No data for {yesterdayDate}. Nothing to sync.");
+                return;
+            }
+
+            // Generate combined string of health data
+            var sb = new StringBuilder();
+            // Always sort by DatatypeId to ensure consistent hashing
+            var sortedRecords = healthDataRecords
+                .OrderBy(r => r.DatatypeId)
+                .ToList();
+            foreach (var record in sortedRecords)
+            {
+                sb.Append($"{record.DatatypeId}:{record.DataValue}:{record.RecordedAt.Ticks}|");
+            }
+
+            var concatenatedData = sb.ToString();
+            var dataHash = HashingUtils.ComputeSha256Hash(concatenatedData);
+
+            var distinctDataTypes = healthDataRecords.Select(r => r.DatatypeId).Distinct().Count();
+
+            // Submit to blockchain
+            await _blockchainService.SubmitDataHashAsync(userId, dataHash);
+            await _blockchainService.SubmitDailyDataAsync(userId.ToString(), distinctDataTypes, false);
+
+            // Mark as synced
+            await _dailySyncRecordRepository.SetSynced(userId, yesterdayDate);
+
+            Console.WriteLine($"✅ Successfully synced {yesterdayDate} on-chain.");
         }
     }
 }

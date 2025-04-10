@@ -15,11 +15,45 @@ public class BlockchainController : ControllerBase
         _blockchainService = blockchainService;
     }
     
-    // Submit Daily Data on Behalf of User
+    // Submit Daily Data on Behalf of User (to generate points)
     [HttpPost("submit-daily-data")]
     public async Task<IActionResult> SubmitDailyData([FromBody] DailyDataRequestDto request)
     {
-        await _blockchainService.SubmitDailyDataAsync(request.UserAddress, request.DataTypes, request.HasCondition);
-        return Ok("Daily Data Submitted!");
+        try
+        {
+            await _blockchainService.SubmitDailyDataAsync(request.UserAddress, request.DataTypes, request.HasCondition);
+            return Ok("✅ Daily Data Submitted!");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
+
+
+    [HttpGet("points/{userAddress}")]
+    public async Task<IActionResult> GetPoints(string userAddress)
+    {
+        try
+        {
+            var points = await _blockchainService.GetUserPointsAsync(userAddress);
+            return Ok(new { userAddress, points = points.ToString() });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching user points.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
     }
 }

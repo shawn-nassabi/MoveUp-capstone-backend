@@ -14,4 +14,5 @@ public class User
     
     public int LocationId { get; set; }
     public Location Location { get; set; }
+    public string WalletAddress { get; set; } // Ethereum/Polygon wallet address (e.g., 0xabc123...)
 }
