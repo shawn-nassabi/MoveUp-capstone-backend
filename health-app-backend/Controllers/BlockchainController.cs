@@ -56,4 +56,64 @@ public class BlockchainController : ControllerBase
             return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
         }
     }
+    
+    // Convert user's points to HDT tokens
+    [HttpPost("convert-points-to-tokens")]
+    public async Task<IActionResult> ConvertPointsToTokens([FromBody] ConvertPointsRequestDto request)
+    {
+        try
+        {
+            await _blockchainService.ConvertPointsToTokensAsync(request.UserId);
+            return Ok("✅ Points converted to tokens successfully!");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "Blockchain transaction failed.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
+    
+    
+    [HttpGet("points-per-token")]
+    public async Task<IActionResult> GetPointsPerToken()
+    {
+        try
+        {
+            var pointsPerToken = await _blockchainService.GetPointsPerTokenAsync();
+            return Ok(new { pointsPerToken = pointsPerToken.ToString() });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching pointsPerToken.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
+    
+    [HttpGet("token-balance/{userId}")]
+    public async Task<IActionResult> GetUserTokenBalance(Guid userId)
+    {
+        try
+        {
+            var balance = await _blockchainService.GetUserTokenBalanceAsync(userId);
+            return Ok(new { userId, balance = balance.ToString("F6") });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching user token balance.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
 }
