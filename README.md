@@ -10,3 +10,5 @@
   - and more...
 
 ### Link to frontend SwiftUI app: https://github.com/shawn-nassabi/MoveUp-capstone-frontend 
+
+### Link to blockchain integration repo, containing solidity contracts: https://github.com/shawn-nassabi/capstone-blockchain-integration
