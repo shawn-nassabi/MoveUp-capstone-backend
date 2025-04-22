@@ -24,6 +24,8 @@ builder.Services.AddScoped<IClanJoinRequestRepository, ClanJoinRequestRepository
 builder.Services.AddScoped<IClanChallengeRepository, ClanChallengeRepository>();
 builder.Services.AddScoped<IClanChallengeProgressRepository, ClanChallengeProgressRepository>();
 builder.Services.AddScoped<IDailySyncRecordRepository, DailySyncRecordRepository>();
+builder.Services.AddScoped<IPointsRewardHistoryRepository, PointsRewardHistoryRepository>();
+builder.Services.AddScoped<ITokenRewardHistoryRepository, TokenRewardHistoryRepository>();
 
 // Add services to the container.
 
@@ -40,6 +42,7 @@ builder.Services.AddScoped<IBlockchainService, BlockchainService>();
 
 // Add Hosted Services
 builder.Services.AddHostedService<DataSyncJob>();
+builder.Services.AddHostedService<RewardHistorySyncJob>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

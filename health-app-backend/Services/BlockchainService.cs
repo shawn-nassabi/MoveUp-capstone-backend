@@ -1,5 +1,7 @@
+using health_app_backend.DTOs;
 using health_app_backend.FunctionMessageClasses;
 using health_app_backend.Helpers;
+using health_app_backend.Models;
 using health_app_backend.Repositories;
 using Nethereum.RPC.Eth.DTOs;
 
@@ -21,8 +23,12 @@ public class BlockchainService : IBlockchainService
     private readonly string _dataStorageAddress;
     private readonly string? _backendWalletAddress;
     private readonly IUserRepository _userRepository;
+    private readonly IPointsRewardHistoryRepository _pointsRewardHistoryRepo;
+    private readonly ITokenRewardHistoryRepository _tokenRewardHistoryRepo;
 
-    public BlockchainService(IConfiguration config, IUserRepository userRepository)
+    public BlockchainService(IConfiguration config, IUserRepository userRepository,
+        IPointsRewardHistoryRepository pointsRewardHistoryRepo,
+        ITokenRewardHistoryRepository tokenRewardHistoryRepo)
     {
         _privateKey = config["Blockchain:PrivateKey"];
         _rewardSystemAddress = config["Blockchain:HealthRewardSystemAddress"];
@@ -32,6 +38,8 @@ public class BlockchainService : IBlockchainService
         _web3 = new Web3(new Account(_privateKey), config["Blockchain:PolygonRpcUrl"]);
         
         _userRepository = userRepository;
+        _pointsRewardHistoryRepo = pointsRewardHistoryRepo;
+        _tokenRewardHistoryRepo = tokenRewardHistoryRepo;
     }
     
     // Submit Daily Data on Behalf of User
@@ -65,27 +73,29 @@ public class BlockchainService : IBlockchainService
     }
     
     // Get User Points from the Smart Contract
-    // Get User Points from the Smart Contract
-    public async Task<BigInteger> GetUserPointsAsync(string userAddress)
+    public async Task<BigInteger> GetUserPointsAsync(Guid userId)
     {
         try
         {
-            // Create a contract handler for the reward system contract
+            var userWalletAddress = await _userRepository.GetWalletAddressByUserIdAsync(userId);
+            if (string.IsNullOrEmpty(userWalletAddress))
+            {
+                throw new Exception("User does not have a blockchain wallet address.");
+            }
+
             var contractHandler = _web3.Eth.GetContractHandler(_rewardSystemAddress);
 
-            // Create a function message instance for querying the userPoints mapping
             var query = new QueryUserPointsFunction()
             {
-                User = userAddress
+                User = userWalletAddress
             };
 
-            // Query the contract using the strongly typed function message
             var result = await contractHandler.QueryAsync<QueryUserPointsFunction, BigInteger>(query);
             return result;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Failed to get user points for {userAddress}. Error: {ex.Message}");
+            Console.WriteLine($"❌ Failed to get user points for userId {userId}. Error: {ex.Message}");
             throw new ApplicationException("Could not fetch user points from the blockchain.", ex);
         }
     }
@@ -185,7 +195,7 @@ public class BlockchainService : IBlockchainService
         var functionMessage = new MintFunction()
         {
             To = userAddress,
-            Amount = amount
+            Amount = Web3.Convert.ToWei(amount, 18) // Scale to match 18 decimals
         };
 
         var txHash = await contractHandler.SendRequestAsync(functionMessage);
@@ -243,5 +253,162 @@ public class BlockchainService : IBlockchainService
             throw new Exception("User does not have a blockchain wallet address.");
         }
         return userWalletAddress;
+    }
+    
+    public async Task<IEnumerable<PointsRewardHistoryDto>> GetPointsRewardHistoryAsync(Guid userId)
+    {
+        Console.WriteLine($"➡️ Fetching points reward history for user {userId}");
+        try
+        {
+            var walletAddress = await _userRepository.GetWalletAddressByUserIdAsync(userId);
+            if (string.IsNullOrEmpty(walletAddress))
+            {
+                Console.WriteLine($"❌ Wallet address not found for user {userId}");
+                throw new Exception("User does not have a blockchain wallet address.");
+            }
+ 
+            var history = await _pointsRewardHistoryRepo.GetByWalletAddressAsync(walletAddress);
+            Console.WriteLine($"✅ Retrieved {history?.Count() ?? 0} points reward records for {walletAddress}");
+            
+            // Convert to DTOs
+            return history.Select(h => new PointsRewardHistoryDto
+            {
+                Id = h.Id,
+                WalletAddress = h.WalletAddress,
+                Points = (long)h.Points,
+                Timestamp = h.Timestamp
+            });
+            // return history;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error retrieving points reward history for user {userId}: {ex.Message}");
+            throw new ApplicationException("Failed to retrieve points reward history.", ex);
+        }
+    }
+ 
+    public async Task<IEnumerable<TokenRewardHistoryDto>> GetTokenRewardHistoryAsync(Guid userId)
+    {
+        Console.WriteLine($"➡️ Fetching token reward history for user {userId}");
+        try
+        {
+            var walletAddress = await _userRepository.GetWalletAddressByUserIdAsync(userId);
+            if (string.IsNullOrEmpty(walletAddress))
+            {
+                Console.WriteLine($"❌ Wallet address not found for user {userId}");
+                throw new Exception("User does not have a blockchain wallet address.");
+            }
+ 
+            var history = await _tokenRewardHistoryRepo.GetByWalletAddressAsync(walletAddress);
+            Console.WriteLine($"✅ Retrieved {history?.Count() ?? 0} token reward records for {walletAddress}");
+            
+            // Convert to DTOs
+            return history.Select(h => new TokenRewardHistoryDto
+            {
+                Id = h.Id,
+                WalletAddress = h.WalletAddress,
+                Tokens = (long)h.Tokens,
+                Timestamp = h.Timestamp
+            });
+            //return history;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error retrieving token reward history for user {userId}: {ex.Message}");
+            throw new ApplicationException("Failed to retrieve token reward history.", ex);
+        }
+    }
+    
+    public async Task SyncPointsRewardHistoryFromChainAsync()
+    {
+        // 1) Create the event handler for PointsEarned
+        var eventHandler = _web3.Eth.GetEvent<PointsEarnedEventDTO>(_rewardSystemAddress);
+
+        // 2) Build a filter from the first block (or your last‐synced block) to latest
+        var filterAll = eventHandler.CreateFilterInput(
+            BlockParameter.CreateEarliest(),
+            BlockParameter.CreateLatest()
+        );
+
+        // 3) Retrieve all matching logs
+        var logs = await eventHandler.GetAllChangesAsync(filterAll);
+
+        Console.WriteLine($"🔄 Found {logs.Count} new PointsEarned events");
+
+        // 4) For each log, upsert into your DB
+        foreach (var log in logs)
+        {
+            var wallet = log.Event.User;
+            var points = log.Event.Points;
+            //var timestamp = DateTimeOffset.FromUnixTimeSeconds((long)log.Log.BlockNumber.Value).UtcDateTime;
+            
+            // Fetch the block to get its real timestamp
+            var block = await _web3.Eth.Blocks
+                .GetBlockWithTransactionsByNumber
+                .SendRequestAsync(log.Log.BlockNumber);
+            var timestamp = DateTimeOffset
+                .FromUnixTimeSeconds((long)block.Timestamp.Value)
+                .UtcDateTime;
+
+            // Avoid duplicates by checking if it already exists
+            var exists = (await _pointsRewardHistoryRepo
+                .GetByWalletAddressAsync(wallet))
+                .Any(r => r.Timestamp == timestamp && r.Points == points);
+
+            if (!exists)
+            {
+                var record = new PointsRewardHistory
+                {
+                    WalletAddress = wallet,
+                    Points        = points,
+                    Timestamp     = timestamp
+                };
+                await _pointsRewardHistoryRepo.AddAsync(record);
+            }
+        }
+
+        // 5) Persist them all at once
+        await _pointsRewardHistoryRepo.UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task SyncTokenRewardHistoryFromChainAsync()
+    {
+        var eventHandler = _web3.Eth.GetEvent<TokensMintedEventDTO>(_rewardSystemAddress);
+        var filterAll    = eventHandler.CreateFilterInput(BlockParameter.CreateEarliest(), BlockParameter.CreateLatest());
+        var logs         = await eventHandler.GetAllChangesAsync(filterAll);
+
+        Console.WriteLine($"🔄 Found {logs.Count} new TokensMinted events");
+
+        foreach (var log in logs)
+        {
+            var wallet    = log.Event.User;
+            var tokens    = log.Event.Tokens;
+            //var timestamp = DateTimeOffset.FromUnixTimeSeconds((long)log.Log.BlockNumber.Value).UtcDateTime;
+            
+            // Fetch the block to get its real timestamp
+            var block = await _web3.Eth.Blocks
+                .GetBlockWithTransactionsByNumber
+                .SendRequestAsync(log.Log.BlockNumber);
+            var timestamp = DateTimeOffset
+                .FromUnixTimeSeconds((long)block.Timestamp.Value)
+                .UtcDateTime;
+
+            var exists = (await _tokenRewardHistoryRepo
+                .GetByWalletAddressAsync(wallet))
+                .Any(r => r.Timestamp == timestamp && r.Tokens == tokens);
+
+            if (!exists)
+            {
+                var record = new TokenRewardHistory
+                {
+                    WalletAddress = wallet,
+                    Tokens        = tokens,
+                    Timestamp     = timestamp
+                };
+                await _tokenRewardHistoryRepo.AddAsync(record);
+            }
+        }
+
+        await _tokenRewardHistoryRepo.UnitOfWork.SaveChangesAsync();
     }
 }

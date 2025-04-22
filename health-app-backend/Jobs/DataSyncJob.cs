@@ -50,6 +50,7 @@ public class DataSyncJob : BackgroundService
                         _logger.LogInformation("[DataSyncJob] Starting data sync for {UserId}", user.Id);
                         await healthDataService.SyncYesterdayDataAsync(user.Id, DateTime.UtcNow);
                     }
+                    
                 }
             }
             catch (Exception ex)

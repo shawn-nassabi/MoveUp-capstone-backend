@@ -1,6 +1,7 @@
 using health_app_backend.DTOs;
 using health_app_backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace health_app_backend.Controllers;
 
@@ -39,13 +40,13 @@ public class BlockchainController : ControllerBase
     }
 
 
-    [HttpGet("points/{userAddress}")]
-    public async Task<IActionResult> GetPoints(string userAddress)
+    [HttpGet("points/{userId}")]
+    public async Task<IActionResult> GetPoints(Guid userId)
     {
         try
         {
-            var points = await _blockchainService.GetUserPointsAsync(userAddress);
-            return Ok(new { userAddress, points = points.ToString() });
+            var points = await _blockchainService.GetUserPointsAsync(userId);
+            return Ok(new { userId, points = points.ToString() });
         }
         catch (ApplicationException ex)
         {
@@ -110,6 +111,52 @@ public class BlockchainController : ControllerBase
         catch (ApplicationException ex)
         {
             return StatusCode(500, new { message = "An error occurred while fetching user token balance.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
+
+    // Get points reward history for a user
+    [HttpGet("history/points/{userId}")]
+    public async Task<IActionResult> GetPointsRewardHistory(Guid userId)
+    {
+        try
+        {
+            var history = await _blockchainService.GetPointsRewardHistoryAsync(userId);
+            return Ok(history);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching points reward history.", details = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Unexpected error occurred.", details = ex.Message });
+        }
+    }
+
+    // Get token reward history for a user
+    [HttpGet("history/tokens/{userId}")]
+    public async Task<IActionResult> GetTokenRewardHistory(Guid userId)
+    {
+        try
+        {
+            var history = await _blockchainService.GetTokenRewardHistoryAsync(userId);
+            return Ok(history);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (ApplicationException ex)
+        {
+            return StatusCode(500, new { message = "An error occurred while fetching token reward history.", details = ex.Message });
         }
         catch (Exception ex)
         {

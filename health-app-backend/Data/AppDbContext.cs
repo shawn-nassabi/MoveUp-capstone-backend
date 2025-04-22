@@ -1,9 +1,10 @@
 using health_app_backend.Models;
+using health_app_backend.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace health_app_backend;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IUnitOfWork
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -22,6 +23,9 @@ public class AppDbContext : DbContext
     public DbSet<ClanChallenge> ClanChallenges { get; set; }
     public DbSet<ClanChallengeProgress> ClanChallengeProgresses { get; set; }
     public DbSet<DailySyncRecord> DailySyncRecords { get; set; }
+    
+    public DbSet<PointsRewardHistory> PointsRewardHistories { get; set; }
+    public DbSet<TokenRewardHistory> TokenRewardHistories { get; set; }
     
     // Need the following to resolve migration issues with the new friends and friendrequests models
     protected override void OnModelCreating(ModelBuilder modelBuilder)
