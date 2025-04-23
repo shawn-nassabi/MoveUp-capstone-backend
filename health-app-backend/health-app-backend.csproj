@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1" />
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,9 +17,15 @@
         <PackageReference Include="Nethereum.Contracts" Version="4.29.0" />
         <PackageReference Include="Nethereum.Hex" Version="4.29.0" />
         <PackageReference Include="Nethereum.RPC" Version="4.29.0" />
+        <PackageReference Include="Nethereum.Signer" Version="4.29.0" />
         <PackageReference Include="Nethereum.Web3" Version="4.29.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <None Update="wallets-test-users.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+    
 
 </Project>

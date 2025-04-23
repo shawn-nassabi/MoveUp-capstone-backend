@@ -1,4 +1,5 @@
 using health_app_backend;
+using health_app_backend.Helpers;
 using health_app_backend.Jobs;
 using health_app_backend.Mappings;
 using health_app_backend.Models;
@@ -7,7 +8,22 @@ using health_app_backend.Repositories;
 using health_app_backend.Services;
 using Nethereum.BlockchainProcessing.BlockStorage.Entities;
 
+// WalletExporter.Main(); // Run once to generate wallets
+
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -46,6 +62,10 @@ builder.Services.AddHostedService<RewardHistorySyncJob>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,6 +78,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     try
+//     {
+//         var dbContext = services.GetRequiredService<AppDbContext>();
+//         await DbSeeder.SeedUsersAsync(dbContext);
+//         Console.WriteLine("Seeding done");
+//     }
+//     catch (Exception ex)
+//     {
+//         Console.WriteLine($"❌ Error during seeding: {ex.Message}");
+//     }
+// }
+
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
