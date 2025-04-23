@@ -1,6 +1,5 @@
 using AutoMapper;
 using health_app_backend.DTOs;
-using health_app_backend.Migrations;
 using health_app_backend.Models;
 
 namespace health_app_backend.Mappings
