@@ -134,6 +134,7 @@ namespace health_app_backend.Services
                 // Update existing record's value and RecordedAt
                 existingHealthData.DataValue = healthDataCreateDto.DataValue;
                 existingHealthData.RecordedAt = healthDataCreateDto.RecordedAt;
+                existingHealthData.TimeZoneOffset = healthDataCreateDto.TimeZoneOffset;
 
                 _healthDataRepository.Update(existingHealthData);
                 await _healthDataRepository.SaveChangesAsync();
@@ -145,6 +146,7 @@ namespace health_app_backend.Services
                 // No existing record, create a new one
                 var healthData = _mapper.Map<HealthData>(healthDataCreateDto);
                 healthData.Id = Guid.NewGuid();
+                healthData.TimeZoneOffset = healthDataCreateDto.TimeZoneOffset;
 
                 await _healthDataRepository.AddAsync(healthData);
                 
@@ -169,31 +171,58 @@ namespace health_app_backend.Services
         }
         
         // Sync data with the blockchain
-        public async Task SyncYesterdayDataAsync(Guid userId, DateTime userLocalNow)
+        public async Task SyncYesterdayDataAsync(Guid userId, DateTime nowUtc)
         {
-            var yesterdayDate = userLocalNow.Date.AddDays(-1);
-
-            // Check if already synced
-            var alreadySynced = await _dailySyncRecordRepository.IsSynced(userId, yesterdayDate);
-            if (alreadySynced)
+            // 1) Determine "today" in the user’s local time.
+            //    We need the user’s offset. We could fetch the *last known* offset for this user, but
+            //    actually each HealthData row has its own offset. Usually that offset won't change
+            //    for a given user unless they travel across time zones. If you assume they stay in one
+            //    offset per day, you can fetch any one of their latest offsets (e.g., look at their most
+            //    recent HealthData row or store the offset in the User record).
+            
+            // For simplicity, let’s look up the user's most recent HealthData offset (if any):
+            var mostRecent = await _healthDataRepository.GetMostRecentByUserIdAsync(userId);
+            if (mostRecent == null)
             {
-                Console.WriteLine($"Data for {yesterdayDate} already synced on-chain.");
+                Console.WriteLine($"[Sync] No health data at all for user {userId}. Skipping.");
                 return;
             }
 
-            // Get HealthData records for yesterday
+            var offsetMinutes = mostRecent.TimeZoneOffset ?? 0; // e.g. -300 for UTC-5
+            // Convert "nowUtc" to that user’s local DateTime:
+            var userLocalNow = nowUtc.AddMinutes(offsetMinutes);
+
+            // 2) Figure out the user's "yesterday" local‐day boundaries in UTC:
+            var localYestDate = userLocalNow.Date.AddDays(-1);
+            
+            // “Local midnight start” in UTC = midnight local minus offset:
+            var utcWindowStart = localYestDate.AddMinutes(-offsetMinutes);           // 00:00 local → UTC
+            var utcWindowEnd   = localYestDate.AddDays(1).AddMinutes(-offsetMinutes).AddTicks(-1);
+            // (i.e. 23:59:59.999 local → UTC)
+
+            // 3) Before querying, see if we already recorded a sync for that local‐day:
+            //    We can store the "synced date" itself in the DailySyncRecords table.
+            if (await _dailySyncRecordRepository.IsSynced(userId, localYestDate))
+            {
+                Console.WriteLine($"[Sync] Local‐day {localYestDate:yyyy-MM-dd} already synced for user {userId}.");
+                return;
+            }
+
+            // 4) Now fetch all health rows in that UTC window:
             var healthDataRecords = await _healthDataRepository.GetAllByUserIdAndDateRangeAsync(
                 userId,
-                yesterdayDate,
-                yesterdayDate.AddDays(1).AddTicks(-1)
+                utcWindowStart, 
+                utcWindowEnd
             );
 
             if (!healthDataRecords.Any())
             {
-                Console.WriteLine($"No data for {yesterdayDate}. Nothing to sync.");
+                Console.WriteLine($"[Sync] No data for user {userId} on local date {localYestDate:yyyy-MM-dd}.");
                 return;
             }
-
+            
+            // 5) Build the hash/extract data types, etc.
+            
             // Generate combined string of health data
             var sb = new StringBuilder();
             // Always sort by DatatypeId to ensure consistent hashing
@@ -210,14 +239,15 @@ namespace health_app_backend.Services
 
             var distinctDataTypes = healthDataRecords.Select(r => r.DatatypeId).Distinct().Count();
 
-            // Submit to blockchain
+            // 6) Push both pieces to blockchain:
             await _blockchainService.SubmitDataHashAsync(userId, dataHash);
             await _blockchainService.SubmitDailyDataAsync(userId.ToString(), distinctDataTypes, false);
 
-            // Mark as synced
-            await _dailySyncRecordRepository.SetSynced(userId, yesterdayDate);
+            // 7) Mark “localYestDate” as synced:
+            await _dailySyncRecordRepository.SetSynced(userId, localYestDate);
 
-            Console.WriteLine($"✅ Successfully synced {yesterdayDate} on-chain.");
+            Console.WriteLine($"✅ Synced user {userId} local‐day {localYestDate:yyyy-MM-dd} → on‐chain.");
         }
+        
     }
 }

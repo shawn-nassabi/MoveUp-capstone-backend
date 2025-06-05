@@ -14,5 +14,6 @@ public class HealthData
     public DataType Datatype { get; set; }
     
     public float DataValue { get; set; }
-    public DateTime RecordedAt { get; set; }
+    public DateTime RecordedAt { get; set; } // Stored in UTC
+    public int?    TimeZoneOffset { get; set; }  // new: user's local timezone offset from utc in minutes
 }

@@ -27,7 +27,13 @@ public class DataSyncJob : BackgroundService
             var nowUtc = DateTime.UtcNow;
                 
             // Target time: 3 AM UTC
-            var nextRunTime = nowUtc.Date.AddDays(1).AddHours(3);
+            // If your backend starts any time before 03:00 UTC (e.g. 22:00 UTC) the first
+            // run jumps 26 h into the future, missing the very first night. Hence this method isn't the best
+            // var nextRunTime = nowUtc.Date.AddDays(1).AddHours(3);
+            
+            // Run today at 03:00 if we haven’t passed that time yet, otherwise tomorrow
+            var today3      = nowUtc.Date.AddHours(3);
+            var nextRunTime = nowUtc < today3 ? today3 : today3.AddDays(1);
 
             var delay = nextRunTime - nowUtc;
 

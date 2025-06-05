@@ -13,5 +13,6 @@ namespace health_app_backend.Repositories
         Task<IEnumerable<HealthData>> GetAllByUserIdAndDateRangeAsync(Guid userId, DateTime fromDate, DateTime toDate);
         IQueryable<HealthData> GetAll();
         Task<IEnumerable<HealthData>> GetFriendActivityAsync(Guid friendId, DateTime fromDate, DateTime toDate);
+        Task<HealthData> GetMostRecentByUserIdAsync(Guid userId);
     }
 }

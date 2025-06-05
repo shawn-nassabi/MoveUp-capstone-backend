@@ -92,6 +92,15 @@ namespace health_app_backend.Repositories
                 .Where(hd => hd.UserId == friendId && hd.RecordedAt >= fromDate &&  hd.RecordedAt <= toDate)
                 .ToListAsync();
         }
+        
+        public async Task<HealthData> GetMostRecentByUserIdAsync(Guid userId)
+        {
+            return await _context.HealthData
+                .Where(hd => hd.UserId == userId)
+                .OrderByDescending(hd => hd.RecordedAt)
+                .FirstOrDefaultAsync();
+        }
+        
 
     }
 }
